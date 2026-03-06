@@ -1,0 +1,33 @@
+# Node
+node_modules/
+dist/
+.npm
+
+# Rust / Cargo
+src-tauri/target/
+src-tauri/gen/
+
+# Tauri
+src-tauri/WixTools/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo

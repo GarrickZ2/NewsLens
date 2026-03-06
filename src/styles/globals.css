@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  /* Background palette */
+  --bg-base: #0a0a0f;
+  --bg-surface: #111118;
+  --bg-card: #16161f;
+  --bg-hover: #1e1e2a;
+  --bg-active: #252535;
+
+  /* Border */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-focus: rgba(99, 102, 241, 0.5);
+
+  /* Text */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.3);
+
+  /* Brand / Accent */
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-dim: rgba(99, 102, 241, 0.15);
+
+  /* Status */
+  --success: #22c55e;
+  --success-dim: rgba(34, 197, 94, 0.12);
+  --warning: #f59e0b;
+  --warning-dim: rgba(245, 158, 11, 0.12);
+  --danger: #ef4444;
+  --danger-dim: rgba(239, 68, 68, 0.12);
+  --info: #3b82f6;
+  --info-dim: rgba(59, 130, 246, 0.12);
+
+  /* Sidebar */
+  --sidebar-width: 240px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Markdown body ── */
+.md-body { font-size: 13px; line-height: 1.7; color: var(--text-primary); }
+.md-body h1, .md-body h2 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 16px 0 8px; }
+.md-body h3, .md-body h4 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 12px 0 6px; }
+.md-body p { margin: 0 0 10px; }
+.md-body p:last-child { margin-bottom: 0; }
+.md-body strong { font-weight: 600; color: var(--text-primary); }
+.md-body em { font-style: italic; color: var(--text-secondary); }
+.md-body code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: var(--bg-hover); padding: 1px 5px; border-radius: 4px; color: var(--accent-light); }
+.md-body pre { background: var(--bg-hover); border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 10px 0; }
+.md-body pre code { background: none; padding: 0; color: var(--text-primary); }
+.md-body ul, .md-body ol { padding-left: 20px; margin: 0 0 10px; }
+.md-body li { margin: 3px 0; }
+.md-body hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.md-body blockquote { border-left: 3px solid var(--accent); padding-left: 12px; margin: 10px 0; color: var(--text-secondary); }
+.md-body table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+.md-body th { background: var(--bg-hover); color: var(--text-secondary); font-weight: 600; text-align: left; padding: 6px 10px; border: 1px solid var(--border); }
+.md-body td { padding: 5px 10px; border: 1px solid var(--border); color: var(--text-primary); }
+.md-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.md-body a { color: var(--accent-light); text-decoration: none; }
+.md-body a:hover { text-decoration: underline; }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(255, 255, 255, 0.1));
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, rgba(255, 255, 255, 0.2));
+}
