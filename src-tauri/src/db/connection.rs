@@ -31,6 +31,13 @@ pub async fn init_db(path: &str) -> Result<Connection> {
         conn.execute_batch("ALTER TABLE fetch_run_logs ADD COLUMN cost_usd REAL DEFAULT 0")
             .ok();
 
+        // Market symbols table
+        conn.execute_batch(MARKET_SYMBOLS_TABLE)?;
+
+        // Idempotent: add reason column to topic_market_symbols
+        conn.execute_batch("ALTER TABLE topic_market_symbols ADD COLUMN reason TEXT")
+            .ok();
+
         // New settings keys (idempotent)
         conn.execute_batch("INSERT OR IGNORE INTO settings VALUES ('news_sources', '')")
             .ok();
@@ -129,6 +136,20 @@ CREATE TABLE IF NOT EXISTS fetch_run_logs (
     created_at    TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_run_logs_topic ON fetch_run_logs(topic_id, created_at DESC);
+"#;
+
+const MARKET_SYMBOLS_TABLE: &str = r#"
+CREATE TABLE IF NOT EXISTS topic_market_symbols (
+    id TEXT PRIMARY KEY,
+    topic_id TEXT NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    symbol TEXT NOT NULL,
+    name TEXT NOT NULL,
+    asset_type TEXT NOT NULL DEFAULT 'stock',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL,
+    UNIQUE(topic_id, symbol)
+);
+CREATE INDEX IF NOT EXISTS idx_market_symbols_topic ON topic_market_symbols(topic_id);
 "#;
 
 const NEWS_EVENTS_TABLE: &str = r#"

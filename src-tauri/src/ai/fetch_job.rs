@@ -27,6 +27,19 @@ pub struct NewsEventOutput {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct RelatedSymbol {
+    /// Yahoo Finance 兼容的 ticker，例如 AAPL、BTC-USD
+    pub symbol: String,
+    pub name: String,
+    /// "stock" | "etf" | "crypto"
+    #[serde(rename = "assetType")]
+    pub asset_type: String,
+    /// One-sentence English reason why this asset is relevant
+    #[serde(default)]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FetchJobResult {
     #[serde(rename = "noChange")]
     pub no_change: bool,
@@ -36,6 +49,9 @@ pub struct FetchJobResult {
     pub events: Vec<NewsEventOutput>,
     #[serde(rename = "checklistEvaluations", default)]
     pub checklist_evaluations: Vec<ChecklistEvaluation>,
+    /// 与本次 Topic 相关的股票/ETF/加密货币
+    #[serde(rename = "relatedSymbols", default)]
+    pub related_symbols: Vec<RelatedSymbol>,
 }
 
 /// Topic context passed to both API and agent fetch jobs
@@ -147,9 +163,10 @@ Only report events that occurred AFTER {}. Always include today's date in your s
 1. Search the web for the LATEST news. Use explicit date-filtered queries, e.g. "{topic_name} {today}" or "{topic_name} site:reuters.com OR site:apnews.com"
 2. Prioritize results from TODAY and yesterday. Discard anything older than 48 hours unless it is the only available source
 3. Evaluate each checklist item against the findings
-4. Call report_findings with structured results
-5. If nothing significant has changed in the last 48 hours, set noChange=true and events=[]
-6. For each event, set occurredAt to the actual date/time the event happened per sources (ISO 8601)"#,
+4. Identify related financial assets (stocks, ETFs, crypto) mentioned or affected by this topic. Use Yahoo Finance-compatible ticker symbols (e.g. AAPL for Apple, BTC-USD for Bitcoin, QQQ for NASDAQ ETF). Limit to the most relevant ones, max 5 per asset type. For each asset provide a concise one-sentence English reason explaining why it is relevant to this topic.
+5. Call report_findings with structured results
+6. If nothing significant has changed in the last 48 hours, set noChange=true and events=[]
+7. For each event, set occurredAt to the actual date/time the event happened per sources (ISO 8601)"#,
         topic_name = ctx.topic_name,
         today = now.format("%Y-%m-%d"),
     ));

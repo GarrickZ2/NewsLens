@@ -1,6 +1,7 @@
 pub mod checklist;
 pub mod events;
 pub mod focus_points;
+pub mod market;
 pub mod scheduler;
 pub mod settings;
 pub mod stats;

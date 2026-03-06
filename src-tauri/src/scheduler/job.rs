@@ -4,6 +4,7 @@ use crate::db::queries::{
     checklist::get_checklist_items,
     checklist::update_checklist_item_triggered,
     focus_points::get_focus_points,
+    market_symbols::{replace_topic_symbols, SymbolInput},
     news_events::{create_news_event, get_active_events, update_news_event, NewEventInput},
     run_logs::{create_run_log, RunLogInput},
     settings::get_settings,
@@ -287,7 +288,22 @@ async fn do_fetch(
         }
     }
 
-    // 5. Save run log
+    // 5. Save related market symbols (top 5 per asset type)
+    if !result.related_symbols.is_empty() {
+        let symbol_inputs: Vec<SymbolInput> = result
+            .related_symbols
+            .iter()
+            .map(|s| SymbolInput {
+                symbol: s.symbol.clone(),
+                name: s.name.clone(),
+                asset_type: s.asset_type.clone(),
+                reason: s.reason.clone(),
+            })
+            .collect();
+        let _ = replace_topic_symbols(db, topic_id, &symbol_inputs).await;
+    }
+
+    // 6. Save run log
     let _ = create_run_log(
         db,
         topic_id,

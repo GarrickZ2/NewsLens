@@ -6,8 +6,28 @@ import ChecklistPanel from "../components/topic/ChecklistPanel";
 import FocusPointsPanel from "../components/topic/FocusPointsPanel";
 import UpdatesTimeline from "../components/topic/UpdatesTimeline";
 import StatisticsTab from "../components/topic/StatisticsTab";
+import MarketTab from "../components/topic/MarketTab";
 
-type Tab = "updates" | "checklist" | "focus" | "stats";
+type Tab = "updates" | "checklist" | "focus" | "stats" | "markets";
+
+const TAB_LABELS: Record<Tab, string> = {
+  updates: "Updates",
+  checklist: "Checklist",
+  focus: "Focus Points",
+  stats: "Statistics",
+  markets: "Markets",
+};
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  const hrs = Math.floor(mins / 60);
+  const days = Math.floor(hrs / 24);
+  if (days > 0) return `${days}d ago`;
+  if (hrs > 0) return `${hrs}h ago`;
+  if (mins > 0) return `${mins}m ago`;
+  return "just now";
+}
 
 export default function TopicDetailPage({ topicId }: { topicId: string }) {
   const { data: topic, isLoading } = useTopic(topicId);
@@ -19,11 +39,13 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
   const [archiveConfirm, setArchiveConfirm] = useState(false);
   const { data: schedulerStatus } = useSchedulerStatus();
 
-  // Per-topic fetching state driven by Tauri events (see useTauriEvents)
   const fetching = fetchingTopics.has(topicId);
 
   const nextRunIso = schedulerStatus?.[topicId]?.nextRun ?? undefined;
+  const lastRunIso = schedulerStatus?.[topicId]?.lastRun ?? undefined;
+
   const [nextFetchLabel, setNextFetchLabel] = useState("");
+  const [lastFetchLabel, setLastFetchLabel] = useState("");
 
   useEffect(() => {
     if (!nextRunIso) { setNextFetchLabel(""); return; }
@@ -41,6 +63,14 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
     return () => clearInterval(timer);
   }, [nextRunIso]);
 
+  useEffect(() => {
+    if (!lastRunIso) { setLastFetchLabel(""); return; }
+    const update = () => setLastFetchLabel(formatRelativeTime(lastRunIso));
+    update();
+    const timer = setInterval(update, 60_000);
+    return () => clearInterval(timer);
+  }, [lastRunIso]);
+
   if (isLoading || !topic) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "50vh" }}>
@@ -53,7 +83,6 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
     setFetchError(null);
     try {
       await triggerFetch.mutateAsync(topicId);
-      // spinner driven by fetch-job-started/completed/error events via useTauriEvents
     } catch (e) {
       setFetchError(String(e));
     }
@@ -75,16 +104,10 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
       <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24 }}>
         <div
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: 12,
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 24,
-            flexShrink: 0,
+            width: 48, height: 48, borderRadius: 12,
+            background: "var(--bg-card)", border: "1px solid var(--border)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 24, flexShrink: 0,
           }}
         >
           {topic.emoji}
@@ -96,12 +119,23 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
             {topic.description}
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 8 }}>
-            <Clock size={11} style={{ color: "var(--text-muted)" }} />
-            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Next fetch in</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: nextFetchLabel ? "var(--accent)" : "var(--text-muted)", fontFamily: "monospace" }}>
-              {nextFetchLabel || "—"}
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
+            {lastFetchLabel && (
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <Clock size={11} style={{ color: "var(--text-muted)" }} />
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Last fetch</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", fontFamily: "monospace" }}>
+                  {lastFetchLabel}
+                </span>
+              </div>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <Clock size={11} style={{ color: "var(--text-muted)" }} />
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Next fetch in</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: nextFetchLabel ? "var(--accent)" : "var(--text-muted)", fontFamily: "monospace" }}>
+                {nextFetchLabel || "—"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -112,16 +146,9 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
             disabled={fetching}
             title="Fetch now"
             style={{
-              padding: "8px 14px",
-              background: "var(--accent)",
-              border: "none",
-              borderRadius: 8,
-              color: "white",
-              cursor: fetching ? "not-allowed" : "pointer",
-              fontSize: 13,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
+              padding: "8px 14px", background: "var(--accent)", border: "none",
+              borderRadius: 8, color: "white", cursor: fetching ? "not-allowed" : "pointer",
+              fontSize: 13, display: "flex", alignItems: "center", gap: 6,
               opacity: fetching ? 0.7 : 1,
             }}
           >
@@ -133,16 +160,10 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
             onClick={() => setArchiveConfirm(true)}
             title="Archive topic"
             style={{
-              padding: "8px 12px",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: 8,
-              color: "var(--text-secondary)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 13,
+              padding: "8px 12px", background: "var(--bg-card)",
+              border: "1px solid var(--border)", borderRadius: 8,
+              color: "var(--text-secondary)", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6, fontSize: 13,
             }}
           >
             <Archive size={14} />
@@ -155,16 +176,10 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
       {fetchError && (
         <div
           style={{
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 10,
-            padding: "12px 16px",
-            background: "rgba(239,68,68,0.08)",
-            border: "1px solid rgba(239,68,68,0.3)",
-            borderRadius: 8,
-            marginBottom: 16,
-            fontSize: 13,
-            color: "var(--danger)",
+            display: "flex", alignItems: "flex-start", gap: 10,
+            padding: "12px 16px", background: "rgba(239,68,68,0.08)",
+            border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8,
+            marginBottom: 16, fontSize: 13, color: "var(--danger)",
           }}
         >
           <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
@@ -177,24 +192,19 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
 
       {/* Tabs */}
       <div style={{ display: "flex", borderBottom: "1px solid var(--border)", marginBottom: 24, gap: 4 }}>
-        {(["updates", "checklist", "focus", "stats"] as Tab[]).map((t) => (
+        {(["updates", "checklist", "focus", "stats", "markets"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             style={{
-              padding: "8px 16px",
-              background: "none",
-              border: "none",
+              padding: "8px 16px", background: "none", border: "none",
               borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
               color: tab === t ? "var(--text-primary)" : "var(--text-secondary)",
-              cursor: "pointer",
-              fontSize: 13,
-              fontWeight: tab === t ? 600 : 400,
-              marginBottom: -1,
-              textTransform: "capitalize",
+              cursor: "pointer", fontSize: 13,
+              fontWeight: tab === t ? 600 : 400, marginBottom: -1,
             }}
           >
-            {t === "focus" ? "Focus Points" : t === "stats" ? "Statistics" : t.charAt(0).toUpperCase() + t.slice(1)}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
@@ -204,27 +214,22 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
       {tab === "checklist" && <ChecklistPanel topicId={topicId} />}
       {tab === "focus" && <FocusPointsPanel topicId={topicId} />}
       {tab === "stats" && <StatisticsTab topicId={topicId} />}
+      {tab === "markets" && <MarketTab topicId={topicId} />}
 
       {/* Archive confirm modal */}
       {archiveConfirm && (
         <div
           onClick={() => setArchiveConfirm(false)}
           style={{
-            position: "fixed", inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            zIndex: 200,
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border)",
-              borderRadius: 16,
-              padding: "28px 28px 24px",
-              width: 360,
-              maxWidth: "90vw",
+              background: "var(--bg-surface)", border: "1px solid var(--border)",
+              borderRadius: 16, padding: "28px 28px 24px", width: 360, maxWidth: "90vw",
             }}
           >
             <h2 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
@@ -237,12 +242,9 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
               <button
                 onClick={() => setArchiveConfirm(false)}
                 style={{
-                  flex: 1, padding: "10px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 8,
-                  color: "var(--text-secondary)",
-                  cursor: "pointer", fontSize: 13, fontWeight: 500,
+                  flex: 1, padding: "10px", background: "var(--bg-card)",
+                  border: "1px solid var(--border)", borderRadius: 8,
+                  color: "var(--text-secondary)", cursor: "pointer", fontSize: 13, fontWeight: 500,
                 }}
               >
                 Cancel
@@ -251,12 +253,9 @@ export default function TopicDetailPage({ topicId }: { topicId: string }) {
                 onClick={handleArchive}
                 disabled={archiveTopic.isPending}
                 style={{
-                  flex: 1, padding: "10px",
-                  background: "var(--warning-dim)",
-                  border: "1px solid var(--warning)",
-                  borderRadius: 8,
-                  color: "var(--warning)",
-                  cursor: "pointer", fontSize: 13, fontWeight: 600,
+                  flex: 1, padding: "10px", background: "var(--warning-dim)",
+                  border: "1px solid var(--warning)", borderRadius: 8,
+                  color: "var(--warning)", cursor: "pointer", fontSize: 13, fontWeight: 600,
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 }}
               >

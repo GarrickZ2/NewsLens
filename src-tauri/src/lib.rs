@@ -40,10 +40,8 @@ pub fn run() {
                     .await
                     .expect("Failed to create scheduler");
 
-                // Start scheduler first, then add jobs
                 scheduler.start().await.expect("Failed to start scheduler");
 
-                // Load active topics and register jobs
                 if let Ok(topics) = get_active_topics(&db).await {
                     for topic in topics {
                         let _ = scheduler
@@ -61,10 +59,7 @@ pub fn run() {
                 app_handle.manage(state);
             });
 
-            // ── System Tray ──────────────────────────────────────────────
-            let show_item = MenuItemBuilder::new("Show NewsLens")
-                .id("show")
-                .build(app)?;
+            let show_item = MenuItemBuilder::new("Show NewsLens").id("show").build(app)?;
             let quit_item = MenuItemBuilder::new("Quit").id("quit").build(app)?;
             let tray_menu = MenuBuilder::new(app)
                 .item(&show_item)
@@ -102,7 +97,6 @@ pub fn run() {
                 })
                 .build(app)?;
 
-            // ── Hide window on close instead of quitting ─────────────────
             if let Some(window) = app.get_webview_window("main") {
                 let win = window.clone();
                 window.on_window_event(move |event| {
@@ -116,7 +110,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            // Topics
             commands::topics::get_topics,
             commands::topics::get_topic,
             commands::topics::create_topic,
@@ -124,29 +117,26 @@ pub fn run() {
             commands::topics::archive_topic,
             commands::topics::recover_topic,
             commands::topics::delete_topic,
-            // Checklist
             commands::checklist::get_checklist_items,
             commands::checklist::add_checklist_item,
             commands::checklist::reorder_checklist_items,
             commands::checklist::delete_checklist_item,
-            // Focus Points
             commands::focus_points::get_focus_points,
             commands::focus_points::add_focus_point,
             commands::focus_points::delete_focus_point,
-            // Updates
             commands::updates::get_updates,
             commands::updates::get_all_recent_updates,
-            // Scheduler
             commands::scheduler::trigger_fetch,
             commands::scheduler::get_scheduler_status,
-            // Settings
             commands::settings::get_settings_cmd,
             commands::settings::update_settings_cmd,
-            // Events
             commands::events::get_news_events_cmd,
-            // Stats
             commands::stats::get_topic_run_logs_cmd,
             commands::stats::get_global_stats_cmd,
+            commands::market::get_topic_symbols_cmd,
+            commands::market::extract_topic_symbols_cmd,
+            commands::market::fetch_market_data_cmd,
+            commands::market::fetch_index_data_cmd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

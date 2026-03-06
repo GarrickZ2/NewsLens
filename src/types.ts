@@ -143,3 +143,34 @@ export interface PartialSettings {
   larkWebhooks?: string;
   telegramBots?: string;
 }
+
+// ── Market types ──────────────────────────────────────────────────────────────
+
+export interface TopicMarketSymbol {
+  id: string;
+  topicId: string;
+  symbol: string;
+  name: string;
+  assetType: "stock" | "etf" | "crypto";
+  sortOrder: number;
+  updatedAt: string;
+  reason?: string;
+}
+
+export interface Candle {
+  t: number; // unix timestamp seconds
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+}
+
+export interface MarketData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePct: number;
+  candles: Candle[];
+  assetType: string;
+}
