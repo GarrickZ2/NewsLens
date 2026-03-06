@@ -95,6 +95,9 @@ pub struct Settings {
     pub news_sources: String,     // comma-separated, empty = all sources
     pub language: String,         // output language, default "English"
     pub discord_webhooks: String, // JSON array of webhook URLs, e.g. ["https://..."]
+    pub slack_webhooks: String,   // JSON array of webhook URLs
+    pub lark_webhooks: String,    // JSON array of webhook URLs
+    pub telegram_bots: String,    // JSON array of {token, chatId} objects
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,7 +1,13 @@
 mod discord;
+mod lark;
+mod slack;
 mod system;
+mod telegram;
 pub use discord::DiscordHook;
+pub use lark::LarkHook;
+pub use slack::SlackHook;
 pub use system::SystemNotifyHook;
+pub use telegram::{TelegramBot, TelegramHook};
 
 use async_trait::async_trait;
 

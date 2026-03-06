@@ -51,6 +51,13 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [discordWebhooks, setDiscordWebhooks] = useState<string[]>([]);
   const [discordInput, setDiscordInput] = useState("");
+  const [slackWebhooks, setSlackWebhooks] = useState<string[]>([]);
+  const [slackInput, setSlackInput] = useState("");
+  const [larkWebhooks, setLarkWebhooks] = useState<string[]>([]);
+  const [larkInput, setLarkInput] = useState("");
+  const [telegramBots, setTelegramBots] = useState<{ token: string; chatId: string }[]>([]);
+  const [telegramToken, setTelegramToken] = useState("");
+  const [telegramChatId, setTelegramChatId] = useState("");
   const [customCron, setCustomCron] = useState("");
   const [freqMode, setFreqMode] = useState<"preset" | "custom">("preset");
   const [saved, setSaved] = useState(false);
@@ -81,6 +88,21 @@ export default function SettingsPage() {
       } catch {
         setDiscordWebhooks([]);
       }
+      try {
+        setSlackWebhooks(JSON.parse(settings.slackWebhooks ?? "[]") as string[]);
+      } catch {
+        setSlackWebhooks([]);
+      }
+      try {
+        setLarkWebhooks(JSON.parse(settings.larkWebhooks ?? "[]") as string[]);
+      } catch {
+        setLarkWebhooks([]);
+      }
+      try {
+        setTelegramBots(JSON.parse(settings.telegramBots ?? "[]") as { token: string; chatId: string }[]);
+      } catch {
+        setTelegramBots([]);
+      }
       setNewsSources(settings.newsSources ? settings.newsSources.split(",").map((s) => s.trim()).filter(Boolean) : []);
       setLanguage(settings.language ?? "English");
     }
@@ -98,6 +120,9 @@ export default function SettingsPage() {
       defaultFrequency: effectiveFreq,
       notificationsEnabled: notifications,
       discordWebhooks: JSON.stringify(discordWebhooks),
+      slackWebhooks: JSON.stringify(slackWebhooks),
+      larkWebhooks: JSON.stringify(larkWebhooks),
+      telegramBots: JSON.stringify(telegramBots),
       newsSources: newsSources.join(","),
       language,
     });
@@ -452,6 +477,9 @@ export default function SettingsPage() {
           description={[
             notifications ? "Desktop alerts" : null,
             discordWebhooks.length > 0 ? `Discord (${discordWebhooks.length})` : null,
+            slackWebhooks.length > 0 ? `Slack (${slackWebhooks.length})` : null,
+            larkWebhooks.length > 0 ? `Lark (${larkWebhooks.length})` : null,
+            telegramBots.length > 0 ? `Telegram (${telegramBots.length})` : null,
           ].filter(Boolean).join(" · ") || "No alerts configured"}
           icon={Bell}
           iconColor="#fb923c"
@@ -554,6 +582,144 @@ export default function SettingsPage() {
               </div>
               <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
                 Get the URL from your Discord server: Channel Settings → Integrations → Webhooks.
+              </p>
+            </div>
+
+            {/* Slack webhooks */}
+            <WebhookListInput
+              label="Slack Webhooks"
+              logo={
+                <svg width="18" height="18" viewBox="0 0 127 127" fill="none">
+                  <path d="M27.2 80c0 7.3-5.9 13.2-13.2 13.2C6.7 93.2.8 87.3.8 80c0-7.3 5.9-13.2 13.2-13.2H27v13.2h.2z" fill="#E01E5A"/>
+                  <path d="M33.7 80c0-7.3 5.9-13.2 13.2-13.2 7.3 0 13.2 5.9 13.2 13.2v33c0 7.3-5.9 13.2-13.2 13.2-7.3 0-13.2-5.9-13.2-13.2V80z" fill="#E01E5A"/>
+                  <path d="M46.9 27c-7.3 0-13.2-5.9-13.2-13.2C33.7 6.5 39.6.6 46.9.6c7.3 0 13.2 5.9 13.2 13.2V27H46.9z" fill="#36C5F0"/>
+                  <path d="M46.9 33.6c7.3 0 13.2 5.9 13.2 13.2 0 7.3-5.9 13.2-13.2 13.2H13.8C6.5 60 .6 54.1.6 46.8c0-7.3 5.9-13.2 13.2-13.2h33.1z" fill="#36C5F0"/>
+                  <path d="M99.8 46.8c0-7.3 5.9-13.2 13.2-13.2 7.3 0 13.2 5.9 13.2 13.2 0 7.3-5.9 13.2-13.2 13.2H99.8V46.8z" fill="#2EB67D"/>
+                  <path d="M93.2 46.8c0 7.3-5.9 13.2-13.2 13.2-7.3 0-13.2-5.9-13.2-13.2V13.8C66.8 6.5 72.7.6 80 .6c7.3 0 13.2 5.9 13.2 13.2v33z" fill="#2EB67D"/>
+                  <path d="M80 99.8c7.3 0 13.2 5.9 13.2 13.2 0 7.3-5.9 13.2-13.2 13.2-7.3 0-13.2-5.9-13.2-13.2V99.8H80z" fill="#ECB22E"/>
+                  <path d="M80 93.2c-7.3 0-13.2-5.9-13.2-13.2 0-7.3 5.9-13.2 13.2-13.2h33.1c7.3 0 13.2 5.9 13.2 13.2 0 7.3-5.9 13.2-13.2 13.2H80z" fill="#ECB22E"/>
+                </svg>
+              }
+              items={slackWebhooks}
+              onRemove={(i) => setSlackWebhooks((prev) => prev.filter((_, idx) => idx !== i))}
+              inputValue={slackInput}
+              onInputChange={setSlackInput}
+              onAdd={() => {
+                const url = slackInput.trim();
+                if (url && !slackWebhooks.includes(url)) {
+                  setSlackWebhooks((prev) => [...prev, url]);
+                  setSlackInput("");
+                }
+              }}
+              placeholder="https://hooks.slack.com/services/..."
+              hint="Create an Incoming Webhook in your Slack app settings."
+            />
+
+            {/* Lark webhooks */}
+            <WebhookListInput
+              label="Lark / Feishu Webhooks"
+              logo={
+                <svg width="18" height="18" viewBox="0 0 200 200" fill="none">
+                  <circle cx="100" cy="100" r="100" fill="#00D6B9"/>
+                  <path d="M60 140 L100 60 L140 140" stroke="white" strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
+              }
+              items={larkWebhooks}
+              onRemove={(i) => setLarkWebhooks((prev) => prev.filter((_, idx) => idx !== i))}
+              inputValue={larkInput}
+              onInputChange={setLarkInput}
+              onAdd={() => {
+                const url = larkInput.trim();
+                if (url && !larkWebhooks.includes(url)) {
+                  setLarkWebhooks((prev) => [...prev, url]);
+                  setLarkInput("");
+                }
+              }}
+              placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..."
+              hint="Add a custom bot in your Lark/Feishu group: Group Settings → Bots → Add Bot."
+            />
+
+            {/* Telegram bots */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <svg width="18" height="18" viewBox="0 0 240 240" fill="#2CA5E0">
+                  <circle cx="120" cy="120" r="120"/>
+                  <path d="M81 128l-21-6 86-33c4-2 8 1 7 5L136 159c-1 4-5 5-8 3l-23-18-11 10c-3 3-8 1-8-3V128z" fill="white"/>
+                </svg>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>Telegram Bots</div>
+              </div>
+
+              {telegramBots.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+                  {telegramBots.map((bot, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        padding: "8px 10px",
+                        background: "var(--bg-hover)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8,
+                      }}
+                    >
+                      <Link size={12} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                      <span style={{
+                        flex: 1, fontSize: 12, color: "var(--text-secondary)",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        fontFamily: "monospace",
+                      }}>
+                        {bot.token.slice(0, 10)}… / chat: {bot.chatId}
+                      </span>
+                      <button
+                        onClick={() => setTelegramBots((prev) => prev.filter((_, i) => i !== idx))}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 2, lineHeight: 0, flexShrink: 0 }}
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={telegramToken}
+                  onChange={(e) => setTelegramToken(e.target.value)}
+                  placeholder="Bot Token (from @BotFather)"
+                  style={{ ...inputStyle, flex: 2, fontSize: 12, fontFamily: "monospace" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--border-focus)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+                <input
+                  value={telegramChatId}
+                  onChange={(e) => setTelegramChatId(e.target.value)}
+                  placeholder="Chat ID"
+                  style={{ ...inputStyle, flex: 1, fontSize: 12, fontFamily: "monospace" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--border-focus)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+                <button
+                  onClick={() => {
+                    const token = telegramToken.trim();
+                    const chatId = telegramChatId.trim();
+                    if (token && chatId) {
+                      setTelegramBots((prev) => [...prev, { token, chatId }]);
+                      setTelegramToken("");
+                      setTelegramChatId("");
+                    }
+                  }}
+                  style={{
+                    padding: "0 14px", height: 40, flexShrink: 0,
+                    background: "var(--accent)", border: "none", borderRadius: 8,
+                    color: "white", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: 13,
+                  }}
+                >
+                  <Plus size={14} />
+                  Add
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+                Create a bot via <code style={{ color: "var(--accent-light)" }}>@BotFather</code>, then get your Chat ID via <code style={{ color: "var(--accent-light)" }}>@userinfobot</code>.
               </p>
             </div>
           </div>
@@ -784,6 +950,87 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
       {children}
+    </div>
+  );
+}
+
+function WebhookListInput({
+  label, logo, items, onRemove, inputValue, onInputChange, onAdd, placeholder, hint,
+}: {
+  label: string;
+  logo: React.ReactNode;
+  items: string[];
+  onRemove: (i: number) => void;
+  inputValue: string;
+  onInputChange: (v: string) => void;
+  onAdd: () => void;
+  placeholder: string;
+  hint: string;
+}) {
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        {logo}
+        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{label}</div>
+      </div>
+
+      {items.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+          {items.map((url, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "8px 10px",
+                background: "var(--bg-hover)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+              }}
+            >
+              <Link size={12} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+              <span style={{
+                flex: 1, fontSize: 12, color: "var(--text-secondary)",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                fontFamily: "monospace",
+              }}>
+                {url}
+              </span>
+              <button
+                onClick={() => onRemove(idx)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: 2, lineHeight: 0, flexShrink: 0 }}
+              >
+                <X size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          value={inputValue}
+          onChange={(e) => onInputChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") onAdd(); }}
+          placeholder={placeholder}
+          style={{ ...inputStyle, flex: 1, fontSize: 12, fontFamily: "monospace" }}
+          onFocus={(e) => (e.target.style.borderColor = "var(--border-focus)")}
+          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+        />
+        <button
+          onClick={onAdd}
+          style={{
+            padding: "0 14px", height: 40,
+            background: "var(--accent)", border: "none", borderRadius: 8,
+            color: "white", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: 13,
+          }}
+        >
+          <Plus size={14} />
+          Add
+        </button>
+      </div>
+      <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>
+        {hint}
+      </p>
     </div>
   );
 }

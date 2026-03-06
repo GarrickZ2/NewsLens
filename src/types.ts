@@ -76,6 +76,9 @@ export interface Settings {
   newsSources: string;      // comma-separated, empty = all
   language: string;         // output language
   discordWebhooks: string;  // JSON array of webhook URLs
+  slackWebhooks: string;    // JSON array of webhook URLs
+  larkWebhooks: string;     // JSON array of webhook URLs
+  telegramBots: string;     // JSON array of {token, chatId} objects
 }
 
 export interface SchedulerStatus {
@@ -136,4 +139,7 @@ export interface PartialSettings {
   newsSources?: string;
   language?: string;
   discordWebhooks?: string;
+  slackWebhooks?: string;
+  larkWebhooks?: string;
+  telegramBots?: string;
 }

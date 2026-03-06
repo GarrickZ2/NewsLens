@@ -11,7 +11,8 @@ use crate::db::queries::{
     updates::create_update,
 };
 use crate::notifier::{
-    DiscordHook, EventSummary, FetchEvent, HookEngine, SystemNotifyHook, TopicInfo,
+    DiscordHook, EventSummary, FetchEvent, HookEngine, LarkHook, SlackHook, SystemNotifyHook,
+    TelegramBot, TelegramHook, TopicInfo,
 };
 use serde::Serialize;
 use std::time::Instant;
@@ -93,6 +94,18 @@ pub async fn execute_fetch_job(app: AppHandle, db: Connection, topic_id: String)
         .as_ref()
         .and_then(|s| serde_json::from_str(&s.discord_webhooks).ok())
         .unwrap_or_default();
+    let slack_urls: Vec<String> = settings
+        .as_ref()
+        .and_then(|s| serde_json::from_str(&s.slack_webhooks).ok())
+        .unwrap_or_default();
+    let lark_urls: Vec<String> = settings
+        .as_ref()
+        .and_then(|s| serde_json::from_str(&s.lark_webhooks).ok())
+        .unwrap_or_default();
+    let telegram_bots: Vec<TelegramBot> = settings
+        .as_ref()
+        .and_then(|s| serde_json::from_str(&s.telegram_bots).ok())
+        .unwrap_or_default();
 
     let mut hooks = HookEngine::new().register(SystemNotifyHook {
         app: app.clone(),
@@ -101,7 +114,15 @@ pub async fn execute_fetch_job(app: AppHandle, db: Connection, topic_id: String)
     if !discord_urls.is_empty() {
         hooks = hooks.register(DiscordHook::new(discord_urls));
     }
-    // Future: .register(SlackHook::new(settings.slack_webhooks))
+    if !slack_urls.is_empty() {
+        hooks = hooks.register(SlackHook::new(slack_urls));
+    }
+    if !lark_urls.is_empty() {
+        hooks = hooks.register(LarkHook::new(lark_urls));
+    }
+    if !telegram_bots.is_empty() {
+        hooks = hooks.register(TelegramHook::new(telegram_bots));
+    }
 
     match do_fetch(app.clone(), &db, &topic_id).await {
         Ok(result) => {

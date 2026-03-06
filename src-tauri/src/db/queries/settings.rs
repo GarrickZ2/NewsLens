@@ -21,6 +21,9 @@ pub async fn get_settings(conn: &Connection) -> Result<Settings> {
                 news_sources: String::new(),
                 language: "English".to_string(),
                 discord_webhooks: "[]".to_string(),
+                slack_webhooks: "[]".to_string(),
+                lark_webhooks: "[]".to_string(),
+                telegram_bots: "[]".to_string(),
             };
 
             for (key, value) in pairs {
@@ -34,6 +37,9 @@ pub async fn get_settings(conn: &Connection) -> Result<Settings> {
                     "news_sources" => settings.news_sources = value,
                     "language" => settings.language = value,
                     "discord_webhooks" => settings.discord_webhooks = value,
+                    "slack_webhooks" => settings.slack_webhooks = value,
+                    "lark_webhooks" => settings.lark_webhooks = value,
+                    "telegram_bots" => settings.telegram_bots = value,
                     _ => {}
                 }
             }
