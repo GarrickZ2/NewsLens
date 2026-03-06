@@ -16,6 +16,9 @@ pub struct PartialSettings {
     pub news_sources: Option<String>,
     pub language: Option<String>,
     pub discord_webhooks: Option<String>,
+    pub slack_webhooks: Option<String>,
+    pub lark_webhooks: Option<String>,
+    pub telegram_bots: Option<String>,
 }
 
 #[tauri::command]
@@ -56,6 +59,15 @@ pub async fn update_settings_cmd(
     }
     if let Some(discord_webhooks) = input.discord_webhooks {
         updates.push(("discord_webhooks".to_string(), discord_webhooks));
+    }
+    if let Some(slack_webhooks) = input.slack_webhooks {
+        updates.push(("slack_webhooks".to_string(), slack_webhooks));
+    }
+    if let Some(lark_webhooks) = input.lark_webhooks {
+        updates.push(("lark_webhooks".to_string(), lark_webhooks));
+    }
+    if let Some(telegram_bots) = input.telegram_bots {
+        updates.push(("telegram_bots".to_string(), telegram_bots));
     }
 
     update_settings(&state.db, updates).await
