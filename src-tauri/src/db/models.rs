@@ -83,7 +83,6 @@ pub struct Source {
     pub url: String,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
@@ -155,7 +154,6 @@ pub struct UpdateTopicInput {
     pub description: Option<String>,
     pub cron_schedule: Option<String>,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

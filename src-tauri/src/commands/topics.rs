@@ -104,4 +104,3 @@ pub async fn delete_topic(state: State<'_, AppState>, id: String) -> Result<()> 
 
     topics::delete_topic(&state.db, &id).await
 }
-
