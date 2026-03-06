@@ -139,6 +139,19 @@ pub struct GlobalStats {
     pub topics: Vec<TopicRunStats>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TopicMarketSymbol {
+    pub id: String,
+    pub topic_id: String,
+    pub symbol: String,
+    pub name: String,
+    pub asset_type: String, // "stock" | "etf" | "crypto"
+    pub sort_order: i64,
+    pub updated_at: String,
+    pub reason: Option<String>,
+}
+
 // Input types for creating/updating
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

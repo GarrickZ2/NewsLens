@@ -63,7 +63,8 @@ pub async fn run_fetch_job_agent(
     let user_message = format!(
         "当前时间：{}。请使用 WebSearch/WebFetch 搜索该 Topic【今日及过去 24 小时内】的最新动态，\
         搜索时请在关键词中包含今天日期以过滤出最新内容。\
-        评估所有 Checklist 条件，然后严格按 JSON Schema 格式输出结果。",
+        评估所有 Checklist 条件，识别与该 Topic 相关的股票/ETF/加密货币（使用 Yahoo Finance ticker），\
+        然后严格按 JSON Schema 格式输出结果。",
         now_str
     );
 
@@ -275,6 +276,30 @@ fn build_json_schema() -> String {
                         "triggered": { "type": "boolean" },
                         "summary": { "type": "string" },
                         "impact": { "type": "string" }
+                    }
+                }
+            },
+            "relatedSymbols": {
+                "type": "array",
+                "description": "与该 Topic 直接相关的金融资产，使用 Yahoo Finance 兼容 ticker。每种类型最多 5 个。",
+                "items": {
+                    "type": "object",
+                    "required": ["symbol", "name", "assetType", "reason"],
+                    "properties": {
+                        "symbol": {
+                            "type": "string",
+                            "description": "Yahoo Finance ticker，例如 AAPL、BTC-USD、QQQ"
+                        },
+                        "name": { "type": "string", "description": "资产全名" },
+                        "assetType": {
+                            "type": "string",
+                            "enum": ["stock", "etf", "crypto"],
+                            "description": "资产类型"
+                        },
+                        "reason": {
+                            "type": "string",
+                            "description": "One-sentence English explanation of why this asset is directly relevant to this topic"
+                        }
                     }
                 }
             }
