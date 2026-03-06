@@ -83,26 +83,13 @@ pub struct Source {
     pub url: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatMessage {
-    pub id: String,
-    pub topic_id: String,
-    pub role: String,
-    pub content: String,
-    pub created_at: String,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
-    pub api_key: String,
-    pub model: String,
     pub default_frequency: String,
     pub notifications_enabled: bool,
     pub db_version: String,
-    // Agent mode
-    pub ai_mode: String,          // "api" | "agent"
     pub agent_command: String,    // e.g. "claude"
     pub agent_model: String,      // e.g. "claude-sonnet-4-6"
     pub brave_api_key: String,    // optional, for Brave Search MCP
@@ -169,16 +156,6 @@ pub struct UpdateTopicInput {
     pub cron_schedule: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TopicSuggestion {
-    pub name: String,
-    pub emoji: String,
-    pub description: String,
-    #[serde(rename = "checklistItems")]
-    pub checklist_items: Vec<String>,
-    #[serde(rename = "focusPoints")]
-    pub focus_points: Vec<String>,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

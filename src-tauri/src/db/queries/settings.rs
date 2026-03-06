@@ -12,12 +12,9 @@ pub async fn get_settings(conn: &Connection) -> Result<Settings> {
             let pairs: Vec<(String, String)> = rows.collect::<std::result::Result<Vec<_>, _>>()?;
 
             let mut settings = Settings {
-                api_key: String::new(),
-                model: "claude-sonnet-4-5".to_string(),
                 default_frequency: "every_3h".to_string(),
                 notifications_enabled: true,
                 db_version: "1".to_string(),
-                ai_mode: "api".to_string(),
                 agent_command: "claude".to_string(),
                 agent_model: "claude-sonnet-4-6".to_string(),
                 brave_api_key: String::new(),
@@ -28,12 +25,9 @@ pub async fn get_settings(conn: &Connection) -> Result<Settings> {
 
             for (key, value) in pairs {
                 match key.as_str() {
-                    "api_key" => settings.api_key = value,
-                    "model" => settings.model = value,
                     "default_frequency" => settings.default_frequency = value,
                     "notifications_enabled" => settings.notifications_enabled = value == "true",
                     "db_version" => settings.db_version = value,
-                    "ai_mode" => settings.ai_mode = value,
                     "agent_command" => settings.agent_command = value,
                     "agent_model" => settings.agent_model = value,
                     "brave_api_key" => settings.brave_api_key = value,

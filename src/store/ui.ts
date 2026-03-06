@@ -6,14 +6,12 @@ interface UIStore {
   currentPage: Page;
   selectedTopicId: string | null;
   topicsMenuOpen: boolean;
-  chatDrawerOpen: boolean;
   createModalOpen: boolean;
   sidebarCollapsed: boolean;
   /** Set of topic IDs currently being fetched (FetchNow or cron) */
   fetchingTopics: Set<string>;
   setPage: (page: Page, topicId?: string) => void;
   toggleTopicsMenu: () => void;
-  toggleChatDrawer: () => void;
   openCreateModal: () => void;
   closeCreateModal: () => void;
   toggleSidebar: () => void;
@@ -24,7 +22,6 @@ export const useUIStore = create<UIStore>((set) => ({
   currentPage: "home",
   selectedTopicId: null,
   topicsMenuOpen: true,
-  chatDrawerOpen: false,
   createModalOpen: false,
   sidebarCollapsed: false,
   fetchingTopics: new Set(),
@@ -33,12 +30,9 @@ export const useUIStore = create<UIStore>((set) => ({
     set({
       currentPage: page,
       selectedTopicId: topicId ?? null,
-      chatDrawerOpen: false,
     }),
 
   toggleTopicsMenu: () => set((s) => ({ topicsMenuOpen: !s.topicsMenuOpen })),
-
-  toggleChatDrawer: () => set((s) => ({ chatDrawerOpen: !s.chatDrawerOpen })),
 
   openCreateModal: () => set({ createModalOpen: true }),
   closeCreateModal: () => set({ createModalOpen: false }),

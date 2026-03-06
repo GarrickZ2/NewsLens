@@ -1,4 +1,3 @@
-pub mod chat;
 pub mod checklist;
 pub mod events;
 pub mod focus_points;

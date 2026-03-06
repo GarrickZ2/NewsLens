@@ -65,21 +65,11 @@ export interface UpdateWithTopic extends Update {
   topicEmoji: string;
 }
 
-export interface ChatMessage {
-  id: string;
-  topicId: string;
-  role: "user" | "ai";
-  content: string;
-  createdAt: string;
-}
 
 export interface Settings {
-  apiKey: string;
-  model: string;
   defaultFrequency: string;
   notificationsEnabled: boolean;
   dbVersion: string;
-  aiMode: "api" | "agent";
   agentCommand: string;
   agentModel: string;
   braveApiKey: string;
@@ -95,18 +85,11 @@ export interface SchedulerStatus {
   lastRun?: string;
 }
 
-interface TopicSuggestion {
-  name: string;
-  emoji: string;
-  description: string;
-  checklistItems: string[];
-  focusPoints: string[];
-}
 
 export interface FetchRunLog {
   id: string;
   topicId: string;
-  aiMode: "api" | "agent";
+  aiMode: string;
   modelName: string;
   inputTokens: number;
   outputTokens: number;
@@ -143,19 +126,10 @@ export interface CreateTopicInput {
   cronSchedule?: string;
 }
 
-interface UpdateTopicInput {
-  name?: string;
-  emoji?: string;
-  description?: string;
-  cronSchedule?: string;
-}
 
 export interface PartialSettings {
-  apiKey?: string;
-  model?: string;
   defaultFrequency?: string;
   notificationsEnabled?: boolean;
-  aiMode?: "api" | "agent";
   agentCommand?: string;
   agentModel?: string;
   braveApiKey?: string;

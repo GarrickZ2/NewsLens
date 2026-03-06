@@ -106,12 +106,9 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 INSERT OR IGNORE INTO settings VALUES
-    ('api_key', ''),
-    ('model', 'claude-sonnet-4-5'),
     ('default_frequency', 'every_3h'),
     ('notifications_enabled', 'true'),
     ('db_version', '1'),
-    ('ai_mode', 'api'),
     ('agent_command', 'claude'),
     ('agent_model', 'claude-sonnet-4-6'),
     ('brave_api_key', '');

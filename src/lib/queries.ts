@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "./tauri";
 import type { CreateTopicInput, PartialSettings } from "../types";
 
+
 // Query keys
 export const qk = {
   topics: ["topics"] as const,
@@ -9,7 +10,6 @@ export const qk = {
   checklist: (topicId: string) => ["checklist", topicId] as const,
   focusPoints: (topicId: string) => ["focusPoints", topicId] as const,
   updates: (topicId: string) => ["updates", topicId] as const,
-  chat: (topicId: string) => ["chat", topicId] as const,
   allRecentUpdates: ["allRecentUpdates"] as const,
   settings: ["settings"] as const,
   schedulerStatus: ["schedulerStatus"] as const,
@@ -59,14 +59,6 @@ export function useAllRecentUpdates() {
   return useQuery({
     queryKey: qk.allRecentUpdates,
     queryFn: () => api.getAllRecentUpdates(20),
-  });
-}
-
-export function useChatMessages(topicId: string | null) {
-  return useQuery({
-    queryKey: qk.chat(topicId!),
-    queryFn: () => api.getChatMessages(topicId!),
-    enabled: !!topicId,
   });
 }
 
@@ -152,16 +144,6 @@ export function useDeleteFocusPoint() {
       api.deleteFocusPoint(id),
     onSuccess: (_, { topicId }) =>
       qc.invalidateQueries({ queryKey: qk.focusPoints(topicId) }),
-  });
-}
-
-export function useSendChatMessage() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ topicId, content }: { topicId: string; content: string }) =>
-      api.sendChatMessage(topicId, content),
-    onSuccess: (_, { topicId }) =>
-      qc.invalidateQueries({ queryKey: qk.chat(topicId) }),
   });
 }
 

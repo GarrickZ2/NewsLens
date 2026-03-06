@@ -92,7 +92,6 @@ export default function SettingsPage() {
   const handleSave = async () => {
     const effectiveFreq = freqMode === "custom" ? customCron : frequency;
     await updateSettings.mutateAsync({
-      aiMode: "agent",
       agentCommand: "claude",
       agentModel,
       braveApiKey,

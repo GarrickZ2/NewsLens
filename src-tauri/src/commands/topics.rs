@@ -1,9 +1,6 @@
-use crate::ai::client::AnthropicClient;
-use crate::ai::topic_creator::suggest_topic;
-use crate::db::models::{CreateTopicInput, Topic, TopicSuggestion, UpdateTopicInput};
-use crate::db::queries::settings::get_settings;
+use crate::db::models::{CreateTopicInput, Topic, UpdateTopicInput};
 use crate::db::queries::topics;
-use crate::error::{AppError, Result};
+use crate::error::Result;
 use crate::state::AppState;
 use tauri::State;
 
@@ -108,15 +105,3 @@ pub async fn delete_topic(state: State<'_, AppState>, id: String) -> Result<()> 
     topics::delete_topic(&state.db, &id).await
 }
 
-#[tauri::command]
-pub async fn ai_suggest_topic(
-    state: State<'_, AppState>,
-    description: String,
-) -> Result<TopicSuggestion> {
-    let settings = get_settings(&state.db).await?;
-    if settings.api_key.is_empty() {
-        return Err(AppError::Ai("API key not configured".to_string()));
-    }
-    let client = AnthropicClient::new(settings.api_key, settings.model);
-    suggest_topic(&client, &description).await
-}

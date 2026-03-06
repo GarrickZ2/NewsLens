@@ -1,6 +1,5 @@
 use crate::ai::agent::run_fetch_job_agent;
-use crate::ai::client::AnthropicClient;
-use crate::ai::fetch_job::{run_fetch_job, FetchContext};
+use crate::ai::fetch_job::FetchContext;
 use crate::db::queries::{
     checklist::get_checklist_items,
     checklist::update_checklist_item_triggered,
@@ -147,10 +146,6 @@ async fn do_fetch(
 
     let topic_summary = topic.summary.as_deref();
 
-    // API pricing constants ($/M tokens), kept in sync with frontend
-    const API_COST_PER_M_INPUT: f64 = 3.0;
-    const API_COST_PER_M_OUTPUT: f64 = 15.0;
-
     let ctx = FetchContext {
         topic_name: &topic.name,
         topic_description: &topic.description,
@@ -161,30 +156,17 @@ async fn do_fetch(
     };
 
     let start = Instant::now();
-    let (result, input_tokens, output_tokens, cost_usd) = if settings.ai_mode == "agent" {
-        let (r, agent_usage) = run_fetch_job_agent(
-            &settings.agent_command,
-            &settings.agent_model,
-            &settings.brave_api_key,
-            &ctx,
-        )
-        .await?;
-        (
-            r,
-            agent_usage.input_tokens,
-            agent_usage.output_tokens,
-            agent_usage.cost_usd,
-        )
-    } else {
-        let client = AnthropicClient::new(settings.api_key.clone(), settings.model.clone());
-        let (r, api_usage) = run_fetch_job(&client, &ctx).await?;
-        let (inp, out) = api_usage
-            .map(|u| (u.input_tokens as i64, u.output_tokens as i64))
-            .unwrap_or((0, 0));
-        let cost =
-            (inp as f64 * API_COST_PER_M_INPUT + out as f64 * API_COST_PER_M_OUTPUT) / 1_000_000.0;
-        (r, inp, out, cost)
-    };
+    let (r, agent_usage) = run_fetch_job_agent(
+        &settings.agent_command,
+        &settings.agent_model,
+        &settings.brave_api_key,
+        &ctx,
+    )
+    .await?;
+    let result = r;
+    let input_tokens = agent_usage.input_tokens;
+    let output_tokens = agent_usage.output_tokens;
+    let cost_usd = agent_usage.cost_usd;
     let duration_ms = start.elapsed().as_millis() as i64;
 
     // 1. Update topic overall summary if provided
@@ -285,17 +267,12 @@ async fn do_fetch(
     }
 
     // 5. Save run log
-    let effective_model = if settings.ai_mode == "agent" {
-        settings.agent_model.clone()
-    } else {
-        settings.model.clone()
-    };
     let _ = create_run_log(
         db,
         topic_id,
         &RunLogInput {
-            ai_mode: settings.ai_mode.clone(),
-            model_name: effective_model,
+            ai_mode: "agent".to_string(),
+            model_name: settings.agent_model.clone(),
             input_tokens,
             output_tokens,
             duration_ms,

@@ -7,7 +7,6 @@ import ArchivePage from "./pages/ArchivePage";
 import SettingsPage from "./pages/SettingsPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import CreateTopicModal from "./components/modals/CreateTopicModal";
-import ChatDrawer from "./components/chat/ChatDrawer";
 
 export default function App() {
   const { currentPage, selectedTopicId, createModalOpen } = useUIStore();
@@ -27,8 +26,6 @@ export default function App() {
         {currentPage === "settings" && <SettingsPage />}
         {currentPage === "statistics" && <StatisticsPage />}
       </main>
-
-      <ChatDrawer />
 
       {createModalOpen && <CreateTopicModal />}
     </div>

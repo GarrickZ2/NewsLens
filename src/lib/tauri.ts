@@ -5,7 +5,6 @@ import type {
   FocusPoint,
   Update,
   UpdateWithTopic,
-  ChatMessage,
   Settings,
   SchedulerStatus,
   CreateTopicInput,
@@ -42,12 +41,6 @@ export const getUpdates = (topicId: string, limit?: number) =>
   invoke<Update[]>("get_updates", { topicId, limit });
 export const getAllRecentUpdates = (limit?: number) =>
   invoke<UpdateWithTopic[]>("get_all_recent_updates", { limit });
-
-// Chat
-export const getChatMessages = (topicId: string) =>
-  invoke<ChatMessage[]>("get_chat_messages_cmd", { topicId });
-export const sendChatMessage = (topicId: string, content: string) =>
-  invoke<ChatMessage>("send_chat_message_cmd", { topicId, content });
 
 // Scheduler
 export const triggerFetch = (topicId: string) => invoke<void>("trigger_fetch", { topicId });

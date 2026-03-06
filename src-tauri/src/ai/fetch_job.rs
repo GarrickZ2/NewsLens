@@ -1,11 +1,6 @@
-use crate::ai::client::{
-    AnthropicClient, Message, MessageContent, MessagesRequest, Tool, ToolChoice, Usage,
-};
 use crate::db::models::{ChecklistItem, FocusPoint, NewsEvent, Source};
-use crate::error::{AppError, Result};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChecklistEvaluation {
@@ -51,125 +46,6 @@ pub struct FetchContext<'a> {
     pub checklist_items: &'a [ChecklistItem],
     pub topic_summary: Option<&'a str>,
     pub active_events: &'a [NewsEvent],
-}
-
-pub async fn run_fetch_job(
-    client: &AnthropicClient,
-    ctx: &FetchContext<'_>,
-) -> Result<(FetchJobResult, Option<Usage>)> {
-    let system_prompt = build_system_prompt(ctx);
-
-    let report_findings_tool = Tool {
-        name: "report_findings".to_string(),
-        description: "Report the research findings in structured format. Call this tool when you have finished researching.".to_string(),
-        input_schema: json!({
-            "type": "object",
-            "required": ["noChange", "events"],
-            "properties": {
-                "noChange": {
-                    "type": "boolean",
-                    "description": "True if there are no significant new developments since the last update"
-                },
-                "overallSummary": {
-                    "type": "string",
-                    "description": "2-4 sentence summary of the current overall situation. Fill this every time there is something to report."
-                },
-                "events": {
-                    "type": "array",
-                    "description": "Empty array when noChange=true. Otherwise list new/escalated/resolved events discovered this run.",
-                    "items": {
-                        "type": "object",
-                        "required": ["title", "eventType", "summary"],
-                        "properties": {
-                            "existingEventId": {
-                                "type": "string",
-                                "description": "ID of an existing active event this is an update for (escalation/resolution)"
-                            },
-                            "title": { "type": "string" },
-                            "eventType": {
-                                "type": "string",
-                                "enum": ["new", "escalation", "resolution"]
-                            },
-                            "summary": { "type": "string" },
-                            "occurredAt": {
-                                "type": "string",
-                                "description": "The real-world date/time the event actually occurred, as reported by sources (ISO 8601 preferred, e.g. '2026-03-04T08:00:00Z'). Leave empty if unknown."
-                            },
-                            "sources": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": { "type": "string" },
-                                        "url": { "type": "string" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "checklistEvaluations": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "checklistItemId": { "type": "string" },
-                            "triggered": { "type": "boolean" },
-                            "summary": { "type": "string" },
-                            "impact": { "type": "string" }
-                        },
-                        "required": ["checklistItemId", "triggered"]
-                    }
-                }
-            }
-        }),
-        tool_type: None,
-    };
-
-    // Use web_search beta + report_findings tool
-    let now_str = Utc::now().format("%Y-%m-%d %H:%M UTC").to_string();
-    let request = MessagesRequest {
-        model: client.model.clone(),
-        max_tokens: 4096,
-        system: Some(system_prompt),
-        messages: vec![Message {
-            role: "user".to_string(),
-            content: MessageContent::Text(
-                format!(
-                    "Today is {}. Please research the LATEST news and developments for the topic '{}' — focus specifically on what happened TODAY and in the last 24 hours. Use date-specific search queries (e.g. include today's date or 'today') to surface the most recent content. Then call report_findings with your structured findings.",
-                    now_str, ctx.topic_name
-                )
-            ),
-        }],
-        tools: Some(vec![report_findings_tool]),
-        tool_choice: Some(ToolChoice {
-            choice_type: "auto".to_string(),
-            name: None,
-        }),
-    };
-
-    let response = client
-        .messages(request, Some("web-search-2025-03-05"))
-        .await?;
-    let usage = response.usage.clone();
-
-    // Extract report_findings tool call result
-    if let Some(findings) = response.get_tool_use("report_findings") {
-        let result: FetchJobResult = serde_json::from_value(findings)
-            .map_err(|e| AppError::Ai(format!("Failed to parse findings: {}", e)))?;
-        return Ok((result, usage));
-    }
-
-    // Fallback: treat text response as no-change
-    Ok((
-        FetchJobResult {
-            no_change: true,
-            overall_summary: None,
-            events: vec![],
-            checklist_evaluations: vec![],
-        },
-        usage,
-    ))
 }
 
 pub fn build_system_prompt(ctx: &FetchContext<'_>) -> String {

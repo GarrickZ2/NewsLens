@@ -124,7 +124,6 @@ pub fn run() {
             commands::topics::archive_topic,
             commands::topics::recover_topic,
             commands::topics::delete_topic,
-            commands::topics::ai_suggest_topic,
             // Checklist
             commands::checklist::get_checklist_items,
             commands::checklist::add_checklist_item,
@@ -137,9 +136,6 @@ pub fn run() {
             // Updates
             commands::updates::get_updates,
             commands::updates::get_all_recent_updates,
-            // Chat
-            commands::chat::get_chat_messages_cmd,
-            commands::chat::send_chat_message_cmd,
             // Scheduler
             commands::scheduler::trigger_fetch,
             commands::scheduler::get_scheduler_status,

@@ -8,11 +8,8 @@ use tauri::State;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PartialSettings {
-    pub api_key: Option<String>,
-    pub model: Option<String>,
     pub default_frequency: Option<String>,
     pub notifications_enabled: Option<bool>,
-    pub ai_mode: Option<String>,
     pub agent_command: Option<String>,
     pub agent_model: Option<String>,
     pub brave_api_key: Option<String>,
@@ -33,12 +30,6 @@ pub async fn update_settings_cmd(
 ) -> Result<Settings> {
     let mut updates = Vec::new();
 
-    if let Some(api_key) = input.api_key {
-        updates.push(("api_key".to_string(), api_key));
-    }
-    if let Some(model) = input.model {
-        updates.push(("model".to_string(), model));
-    }
     if let Some(freq) = input.default_frequency {
         updates.push(("default_frequency".to_string(), freq));
     }
@@ -47,9 +38,6 @@ pub async fn update_settings_cmd(
             "notifications_enabled".to_string(),
             if notif { "true" } else { "false" }.to_string(),
         ));
-    }
-    if let Some(ai_mode) = input.ai_mode {
-        updates.push(("ai_mode".to_string(), ai_mode));
     }
     if let Some(agent_command) = input.agent_command {
         updates.push(("agent_command".to_string(), agent_command));
