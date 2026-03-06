@@ -70,7 +70,7 @@ jobs:
           workspaces: src-tauri
           key: macos-arm
       - name: Build
-        run: cargo build --release --target aarch64-apple-darwin
+        run: cargo build --release --target aarch64-apple-darwin --features custom-protocol
         working-directory: src-tauri
       - name: Package
         run: |
@@ -101,7 +101,7 @@ jobs:
           workspaces: src-tauri
           key: macos-intel
       - name: Build
-        run: cargo build --release --target x86_64-apple-darwin
+        run: cargo build --release --target x86_64-apple-darwin --features custom-protocol
         working-directory: src-tauri
       - name: Package
         run: |
