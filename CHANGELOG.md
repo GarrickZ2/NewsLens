@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-03-05
+
+### Fixed
+
+- **macOS app icon** — release now packages a proper `.app` bundle instead of a bare binary, so the app icon appears correctly in the Dock, Finder, and notification banners
+- **install.sh** — installs `NewsLens.app` to `/Applications/` and creates a symlink in `/usr/local/bin/` pointing into the bundle, ensuring macOS associates the process with the correct bundle identifier and icon
+
 ## [0.1.0] - 2026-03-05
 
 ### Added

@@ -74,14 +74,37 @@ jobs:
         working-directory: src-tauri
       - name: Package
         run: |
-          cd src-tauri/target/aarch64-apple-darwin/release
-          tar -czf newslens-${{ needs.create-release.outputs.tag }}-aarch64-apple-darwin.tar.gz newslens
+          TAG="${{ needs.create-release.outputs.tag }}"
+          VERSION="${TAG#v}"
+          APP="NewsLens.app"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp src-tauri/target/aarch64-apple-darwin/release/newslens "$APP/Contents/MacOS/"
+          cp src-tauri/icons/icon.icns "$APP/Contents/Resources/AppIcon.icns"
+          cat > "$APP/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>NewsLens</string>
+            <key>CFBundleDisplayName</key><string>NewsLens</string>
+            <key>CFBundleIdentifier</key><string>com.newslens.app</string>
+            <key>CFBundleExecutable</key><string>newslens</string>
+            <key>CFBundleIconFile</key><string>AppIcon</string>
+            <key>CFBundleVersion</key><string>$VERSION</string>
+            <key>CFBundleShortVersionString</key><string>$VERSION</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>LSMinimumSystemVersion</key><string>10.13</string>
+          </dict>
+          </plist>
+          EOF
+          tar -czf "newslens-$TAG-aarch64-apple-darwin.tar.gz" "$APP"
       - name: Upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload ${{ needs.create-release.outputs.tag }} --clobber \
-            src-tauri/target/aarch64-apple-darwin/release/newslens-${{ needs.create-release.outputs.tag }}-aarch64-apple-darwin.tar.gz
+            newslens-${{ needs.create-release.outputs.tag }}-aarch64-apple-darwin.tar.gz
 
   # macOS Intel (x86_64)
   build-macos-intel:
@@ -105,14 +128,37 @@ jobs:
         working-directory: src-tauri
       - name: Package
         run: |
-          cd src-tauri/target/x86_64-apple-darwin/release
-          tar -czf newslens-${{ needs.create-release.outputs.tag }}-x86_64-apple-darwin.tar.gz newslens
+          TAG="${{ needs.create-release.outputs.tag }}"
+          VERSION="${TAG#v}"
+          APP="NewsLens.app"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp src-tauri/target/x86_64-apple-darwin/release/newslens "$APP/Contents/MacOS/"
+          cp src-tauri/icons/icon.icns "$APP/Contents/Resources/AppIcon.icns"
+          cat > "$APP/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>NewsLens</string>
+            <key>CFBundleDisplayName</key><string>NewsLens</string>
+            <key>CFBundleIdentifier</key><string>com.newslens.app</string>
+            <key>CFBundleExecutable</key><string>newslens</string>
+            <key>CFBundleIconFile</key><string>AppIcon</string>
+            <key>CFBundleVersion</key><string>$VERSION</string>
+            <key>CFBundleShortVersionString</key><string>$VERSION</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>LSMinimumSystemVersion</key><string>10.13</string>
+          </dict>
+          </plist>
+          EOF
+          tar -czf "newslens-$TAG-x86_64-apple-darwin.tar.gz" "$APP"
       - name: Upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload ${{ needs.create-release.outputs.tag }} --clobber \
-            src-tauri/target/x86_64-apple-darwin/release/newslens-${{ needs.create-release.outputs.tag }}-x86_64-apple-darwin.tar.gz
+            newslens-${{ needs.create-release.outputs.tag }}-x86_64-apple-darwin.tar.gz
 
   # Publish the release once all builds succeed
   publish-release:

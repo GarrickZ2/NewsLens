@@ -58,26 +58,38 @@ install() {
 
     curl -sSL "$DOWNLOAD_URL" | tar -xz -C "$TMP_DIR"
 
-    if [ ! -f "$TMP_DIR/$BINARY_NAME" ]; then
-        echo "Error: Binary not found in archive"
+    APP_BUNDLE="$TMP_DIR/NewsLens.app"
+    if [ ! -d "$APP_BUNDLE" ]; then
+        echo "Error: NewsLens.app not found in archive"
         exit 1
     fi
 
-    if [ -w "$INSTALL_DIR" ]; then
-        mv "$TMP_DIR/$BINARY_NAME" "$INSTALL_DIR/"
-    else
-        echo "Installing to $INSTALL_DIR (requires sudo)"
-        sudo mv "$TMP_DIR/$BINARY_NAME" "$INSTALL_DIR/"
+    # Install .app bundle to /Applications (provides icon + notification support)
+    if [ -d "/Applications/NewsLens.app" ]; then
+        echo "Removing previous installation..."
+        sudo rm -rf "/Applications/NewsLens.app"
     fi
-
-    chmod +x "$INSTALL_DIR/$BINARY_NAME"
+    sudo mv "$APP_BUNDLE" /Applications/
 
     # Remove macOS quarantine flag so the app opens without Gatekeeper prompt
-    xattr -rd com.apple.quarantine "$INSTALL_DIR/$BINARY_NAME" 2>/dev/null || true
+    sudo xattr -rd com.apple.quarantine "/Applications/NewsLens.app" 2>/dev/null || true
+
+    # Create a CLI launcher symlink in INSTALL_DIR
+    LAUNCHER="$INSTALL_DIR/$BINARY_NAME"
+    BUNDLE_BIN="/Applications/NewsLens.app/Contents/MacOS/$BINARY_NAME"
+    if [ -w "$INSTALL_DIR" ]; then
+        ln -sf "$BUNDLE_BIN" "$LAUNCHER"
+    else
+        echo "Creating launcher in $INSTALL_DIR (requires sudo)"
+        sudo ln -sf "$BUNDLE_BIN" "$LAUNCHER"
+    fi
 
     echo ""
     echo "NewsLens installed successfully!"
-    echo "Run 'newslens' to launch."
+    echo "  App: /Applications/NewsLens.app"
+    echo "  CLI: $INSTALL_DIR/$BINARY_NAME"
+    echo ""
+    echo "Run 'newslens' to launch, or open NewsLens from Finder/Spotlight."
 }
 
 main() {
