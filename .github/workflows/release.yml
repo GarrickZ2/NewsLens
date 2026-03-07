@@ -105,6 +105,10 @@ jobs:
         run: |
           gh release upload ${{ needs.create-release.outputs.tag }} --clobber \
             newslens-${{ needs.create-release.outputs.tag }}-aarch64-apple-darwin.tar.gz
+          cp "newslens-${{ needs.create-release.outputs.tag }}-aarch64-apple-darwin.tar.gz" \
+            "newslens-aarch64-apple-darwin.tar.gz"
+          gh release upload ${{ needs.create-release.outputs.tag }} --clobber \
+            newslens-aarch64-apple-darwin.tar.gz
 
   # macOS Intel (x86_64)
   build-macos-intel:
@@ -159,6 +163,10 @@ jobs:
         run: |
           gh release upload ${{ needs.create-release.outputs.tag }} --clobber \
             newslens-${{ needs.create-release.outputs.tag }}-x86_64-apple-darwin.tar.gz
+          cp "newslens-${{ needs.create-release.outputs.tag }}-x86_64-apple-darwin.tar.gz" \
+            "newslens-x86_64-apple-darwin.tar.gz"
+          gh release upload ${{ needs.create-release.outputs.tag }} --clobber \
+            newslens-x86_64-apple-darwin.tar.gz
 
   # Publish the release once all builds succeed
   publish-release:

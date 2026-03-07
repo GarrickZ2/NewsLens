@@ -14,7 +14,8 @@ Define a topic, set a schedule — NewsLens sends Claude Code to the web, surfac
 ## Quick Start
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/GarrickZ2/NewsLens/main/install.sh | sh
+brew tap shuo-han/newslens https://github.com/Shuo-Han/NewsLens
+brew install --cask newslens
 ```
 
 Then launch:
@@ -84,6 +85,16 @@ Cost is reported directly from Claude Code's output and stored per run.
 ---
 
 ## Install
+
+**Homebrew (recommended):**
+
+```bash
+brew tap shuo-han/newslens https://github.com/Shuo-Han/NewsLens
+brew install --cask newslens
+
+# Upgrade
+brew upgrade --cask newslens
+```
 
 **Shell** (auto-detects arm64 / x86_64):
 

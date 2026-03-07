@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Homebrew cask support** — added `Casks/newslens.rb` so users can install via `brew install --cask newslens` from the NewsLens tap
+- **Release asset aliases** — release workflow now uploads fixed-name assets (`newslens-aarch64-apple-darwin.tar.gz`, `newslens-x86_64-apple-darwin.tar.gz`) for Homebrew latest-download URLs
+
 ## [0.1.1] - 2026-03-05
 
 ### Fixed
